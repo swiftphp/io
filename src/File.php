@@ -25,15 +25,15 @@ class File
     /**
      * 删除目录及目录下所有子目录与文件
      * @param $path
+     * @param $deleteEmptyParentFolder如果父目录为空,是否同时删除
      * @return bool
      */
-    public static function deleteDir($path)
+    public static function deleteDir($path,$deleteEmptyParentFolder=false)
     {
         //给定的目录不是一个文件夹
         if(!is_dir($path)){
             return false;
         }
-
         $fh = opendir($path);
         while(($row = readdir($fh)) !== false){
             //过滤掉虚拟目录
@@ -45,13 +45,25 @@ class File
                 unlink($path.'/'.$row);
             }
             self::deleteDir($path.'/'.$row);
-
         }
         //关闭目录句柄，否则出Permission denied
         closedir($fh);
         //删除文件之后再删除自身
         if(!rmdir($path)){
             return false;
+        }
+
+        //是否删除上级空目录
+        if($deleteEmptyParentFolder){
+            $dir=dirname($path);
+            while($dir && $dir != ".." && $dir != "."){
+                if(is_dir($dir) && self::isEmptyDir($dir)){
+                    @rmdir($dir);
+                    $dir=dirname($dir);
+                }else{
+                    break;
+                }
+            }
         }
         return true;
     }
@@ -96,17 +108,8 @@ class File
         if($blReturn && $deleteEmptyFolder){
             $dir=dirname($path);
             while($dir && $dir != ".." && $dir != "."){
-                if(is_dir($dir)){
-                    $dh=opendir($dir);
-                    $file=readdir($dh);
-                    if($file===false || $file=="." || $file==".."){
-                        @rmdir($dir);
-                        @closedir($dh);
-                    }else{
-                        @closedir($dh);
-                        break;
-                    }
-
+                if(is_dir($dir) && self::isEmptyDir($dir)){
+                    @rmdir($dir);
                     $dir=dirname($dir);
                 }else{
                     break;
@@ -116,6 +119,25 @@ class File
 
         //返回值
         return $blReturn;
+    }
+
+    /**
+     * 判断目录是否为空
+     * @param unknown $dir
+     * @return boolean
+     */
+    public static function isEmptyDir($dir)
+    {
+        if($handle = opendir($dir)){
+            while($item = readdir($handle)){
+                if ($item != "." && $item != ".."){
+                    @closedir($handle);
+                    return false;
+                }
+            }
+        }
+        @closedir($handle);
+        return true;
     }
 }
 
