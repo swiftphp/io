@@ -56,13 +56,20 @@ class Path
 
     /**
      * 连接路径字符串
-     * @param string $path1
-     * @param string $path2
+     * @param string[] $paths
      * @return string
      */
-    public static function combinePath($path1,$path2)
+    public static function combinePath(...$paths)
     {
-        return rtrim($path1,"/")."/".ltrim($path2,"/");
+        //$paths=func_get_args();
+        $value="";
+        foreach ($paths as $path){
+            if($value!=""){
+                $value.="/";
+            }
+            $value.=ltrim($path,"/");
+        }
+        return $value;
     }
 }
 
