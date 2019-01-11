@@ -128,15 +128,17 @@ class File
      */
     public static function isEmptyDir($dir)
     {
-        if($handle = opendir($dir)){
-            while($item = readdir($handle)){
+        $handle = opendir($dir);
+        if($handle){
+            $item = readdir($handle);
+            while($item){
                 if ($item != "." && $item != ".."){
                     @closedir($handle);
                     return false;
                 }
+                $item = readdir($handle);
             }
         }
-        @closedir($handle);
         return true;
     }
 }
