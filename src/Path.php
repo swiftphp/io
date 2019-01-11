@@ -63,11 +63,16 @@ class Path
     {
         //$paths=func_get_args();
         $value="";
-        foreach ($paths as $path){
-            if($value!=""){
+        for($i=0;$i<count($paths);$i++){
+            $path=$paths[$i];
+            if($i>0){
                 $value.="/";
+                $path=ltrim($path,"/");
             }
-            $value.=ltrim($path,"/");
+            if($i<count($paths)-1){
+                $path=rtrim($path,"/");
+            }
+            $value.=$path;
         }
         return $value;
     }
